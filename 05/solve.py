@@ -1,7 +1,6 @@
 from __future__ import annotations
 import sys
 import itertools
-import bisect
 import attrs
 
 
@@ -22,17 +21,21 @@ class Range:
 class RangeMap:
     ranges: dict[Range, int]
 
-    def _query_range(self, range_: Range) -> tuple[list[Range], list[Range]]:
-        ranges = []
+    def query_ranges(self, ranges: list[Range]) -> list[Range]:
+        ret = []
 
-        for r, diff in self.ranges.items():
-            if not (intersection := range_.intersect(r)).empty:
-                ranges.append(Range(intersection.start + diff, intersection.end + diff))
+        for range_ in ranges:
+            for r, diff in self.ranges.items():
+                intersection = range_.intersect(r)
+                if not intersection.empty:
+                    ret.append(
+                        Range(intersection.start + diff, intersection.end + diff)
+                    )
 
-        return ranges
+        return ret
 
-    def query(self, ranges: list[Range]) -> list[Range]:
-        return [res for r in ranges for res in self._query_range(r)]
+    def query_points(self, points: list[int]) -> list[int]:
+        return [r.start for r in self.query_ranges([Range(p, p + 1) for p in points])]
 
 
 def main():
@@ -40,12 +43,6 @@ def main():
         list(group)
         for key, group in itertools.groupby(sys.stdin, lambda x: bool(x.strip()))
         if key
-    ]
-
-    seed_nums = [int(x) for x in seeds_line[0].split()[1:]]
-    seeds = [
-        Range(start, start + length)
-        for start, length in zip(seed_nums[::2], seed_nums[1::2])
     ]
 
     maps = []
@@ -65,9 +62,18 @@ def main():
 
         maps.append(RangeMap(range_dict))
 
+    seeds = [int(x) for x in seeds_line[0].split()[1:]]
+    seed_ranges = [
+        Range(start, start + length) for start, length in zip(seeds[::2], seeds[1::2])
+    ]
+
     for m in maps:
-        seeds = m.query(seeds)
-    print(min(seed.start for seed in seeds))
+        seeds = m.query_points(seeds)
+    print(f"Part 1: {min(seeds)}")
+
+    for m in maps:
+        seed_ranges = m.query_ranges(seed_ranges)
+    print(f"Part 2: {min(r.start for r in seed_ranges)}")
 
 
 if __name__ == "__main__":
