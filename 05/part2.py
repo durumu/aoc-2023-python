@@ -1,6 +1,5 @@
 from __future__ import annotations
 import sys
-from typing import Iterable
 import itertools
 import bisect
 import attrs
@@ -10,10 +9,6 @@ import attrs
 class Range:
     start: int
     end: int
-
-    @property
-    def length(self) -> int:
-        return self.end - self.start
 
 
 def compress(add_ranges: list[Range], remove_ranges: list[Range]) -> list[Range]:
@@ -64,14 +59,19 @@ class RangeMap:
         start_idx = max(0, bisect.bisect(self._sorted_keys, range_.start) - 1)
         end_idx = bisect.bisect_left(self._sorted_keys, range_.end, lo=start_idx)
 
-        for full_range_idx in range(start_idx + 1, end_idx):
-            start = self._sorted_keys[full_range_idx]
-            end = self._sorted_keys[full_range_idx + 1]
-            dest = self._dict[start]
+        for i in range(start_idx, min(end_idx + 1, len(self._sorted_keys))):
+            start = max(range_.start, self._sorted_keys[i])
+            end = (
+                range_.end
+                if i == len(self._sorted_keys)
+                else min(range_.end, self._sorted_keys[i + 1])
+            )
+            if start >= end:
+                continue
+            dest = self._dict[self._sorted_keys[i]]
             remove_list.append(Range(start, end))
             add_list.append(Range(start + dest, end + dest))
 
-        add_list.append(start_idx + 1)
         return add_list, remove_list
 
     def query(self, ranges: list[Range]) -> list[Range]:
