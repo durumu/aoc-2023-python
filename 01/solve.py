@@ -20,12 +20,20 @@ def make_digit_regex() -> re.Pattern:
 
 
 def main():
-    ans = 0
+    lines = list(sys.stdin)
+
+    p1_ans = 0
+    for line in lines:
+        digits = [c for c in line if c.isdigit()]
+        p1_ans += int(digits[0] + digits[-1])
+    print(f"Part 1: {p1_ans}")
+
+    p2_ans = 0
     regex = make_digit_regex()
-    for line in sys.stdin:
+    for line in lines:
         digits = [DIGIT_MAP.get(d, d) for d in regex.findall(line)]
-        ans += int(digits[0] + digits[-1])
-    print(ans)
+        p2_ans += int(digits[0] + digits[-1])
+    print(f"Part 2: {p2_ans}")
 
 
 if __name__ == "__main__":
