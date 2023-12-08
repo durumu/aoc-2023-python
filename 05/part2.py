@@ -58,14 +58,20 @@ class RangeMap:
         return self._dict[nearest_key] + key - nearest_key
 
     def _query_range(self, range_: Range) -> tuple[list[Range], list[Range]]:
-        add_list = [range_]
+        add_list = []
         remove_list = []
 
         start_idx = max(0, bisect.bisect(self._sorted_keys, range_.start) - 1)
-        end_idx = max(0, bisect.bisect(self._sorted_keys, range_.end) - 1)
+        end_idx = bisect.bisect_left(self._sorted_keys, range_.end, lo=start_idx)
 
-        ...
+        for full_range_idx in range(start_idx + 1, end_idx):
+            start = self._sorted_keys[full_range_idx]
+            end = self._sorted_keys[full_range_idx + 1]
+            dest = self._dict[start]
+            remove_list.append(Range(start, end))
+            add_list.append(Range(start + dest, end + dest))
 
+        add_list.append(start_idx + 1)
         return add_list, remove_list
 
     def query(self, ranges: list[Range]) -> list[Range]:
