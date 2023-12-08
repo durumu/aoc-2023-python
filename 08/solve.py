@@ -28,7 +28,9 @@ def main():
         lookup[(start, "L")] = left
         lookup[(start, "R")] = right
 
-    print(math.lcm(*[path_length(start, directions, lookup) for start in starts]))
+    print(f'Part 1: {path_length("AAA", directions, lookup)}')
+    ans_2 = math.lcm(*[path_length(start, directions, lookup) for start in starts])
+    print(f"Part 2: {ans_2}")
 
 
 if __name__ == "__main__":
