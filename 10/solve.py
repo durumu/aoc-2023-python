@@ -82,43 +82,19 @@ def main():
     distances = grid.get_distances()
     print(f"Part 1: {max(max(row) for row in distances)}")
 
-    is_open = [[False] * len(row) for row in distances]
-    stack = []
-    for r, row in enumerate(distances):
-        for c, dist in enumerate(row):
-            if dist == -1 and r in (0, len(distances) - 1) or c in (0, len(row) - 1):
-                stack.append((r, c))
+    just_loop = []
+    for i, dists in enumerate(distances):
+        just_loop.append(["." if d == -1 else c for c, d in zip(grid.grid[i], dists)])
 
-    while stack:
-        r, c = stack.pop()
-        if is_open[r][c]:
-            continue
-        is_open[r][c] = True
+    for row in just_loop:
+        intersections = 0
+        for i, c in enumerate(row):
+            if c == "." and intersections % 2 == 1:
+                row[i] = "I"
+            elif c in "J|L":
+                intersections += 1
 
-        if distances[r][c] == -1:
-            directions = list(Direction)
-        else:
-            directions = [d.opposite for d in Direction if d.connects(grid.grid[r][c])]
-
-        for direction in directions:
-            r2, c2 = direction.apply((r, c))
-            if 0 <= r2 < len(distances) and 0 <= c2 < len(distances[r]):
-                stack.append((r2, c2))
-
-    for r, row in enumerate(distances):
-        print(
-            *(
-                grid.grid[r][c] if dist != -1 else "O" if is_open[r][c] else "I"
-                for c, dist in enumerate(row)
-            ),
-            sep="",
-        )
-
-    num_enclosed = sum(
-        len([c for c, d in enumerate(row) if d == -1 and not is_open[r][c]])
-        for r, row in enumerate(distances)
-    )
-    print(f"Part 2: {num_enclosed}")
+    print(f"Part 2: {sum(row.count('I') for row in just_loop)}")
 
 
 if __name__ == "__main__":
