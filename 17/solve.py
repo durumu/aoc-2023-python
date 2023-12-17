@@ -1,5 +1,5 @@
 from __future__ import annotations
-from enum import IntEnum
+from enum import Enum
 from functools import partial
 import sys
 from typing import TypeVar, Callable
@@ -14,32 +14,29 @@ def dijkstra(
     neighbor_fn: Callable[[T], list[tuple[float, T]]],
     is_end_fn: Callable[[T], bool],
 ) -> float | None:
-    dists = {}
+    dists: dict[T, float] = {}
     heap: list[tuple[float, T]] = [(0, start)]
     while heap:
         d, u = heapq.heappop(heap)
-        if is_end_fn(u):
-            return d
         if u in dists:
             continue
+        if is_end_fn(u):
+            return d
         dists[u] = d
-        for w, v in neighbor_fn(u):
+        for cost, v in neighbor_fn(u):
             if v not in dists:
-                heapq.heappush(heap, (d + w, v))
+                heapq.heappush(heap, (d + cost, v))
     return None
 
 
-class Direction(IntEnum):
-    Left = 0
-    Right = 1
-    Up = 2
-    Down = 3
+class Direction(Enum):
+    Left = (0, -1)
+    Right = (0, 1)
+    Up = (-1, 0)
+    Down = (1, 0)
 
-    def apply(self, pos: tuple[int, int]) -> tuple[int, int]:
-        r, c = pos
-        dr = 1 if self is self.Down else -1 if self is self.Up else 0
-        dc = 1 if self is self.Right else -1 if self is self.Left else 0
-        return (r + dr, c + dc)
+    def __lt__(self, other: Direction) -> bool:
+        return self.value < other.value
 
     @property
     def opposite(self) -> Direction:
@@ -58,37 +55,29 @@ class Node:
     direction: Direction
     consecutive: int
 
+    def get_directions(self) -> list[Direction]:
+        directions = [d for d in Direction if d != self.direction.opposite]
+        if self.consecutive == 3:
+            directions.remove(self.direction)
+        return directions
 
-def get_neighbors(blocks: list[list[int]], node: Node) -> list[tuple[float, Node]]:
-    directions = [d for d in Direction if d != node.direction.opposite]
-    if node.consecutive == 3:
-        directions.remove(node.direction)
+    def get_directions_ultra(self) -> list[Direction]:
+        if 0 < self.consecutive < 4:
+            return [self.direction]
 
-    nodes = []
-    for direction in directions:
-        r, c = direction.apply((node.r, node.c))
-        consecutive = 1 if direction != node.direction else (node.consecutive + 1)
-        if 0 <= r < len(blocks) and 0 <= c < len(blocks[r]):
-            nodes.append((blocks[r][c], Node(r, c, direction, consecutive)))
-    return nodes
+        directions = [d for d in Direction if d != self.direction.opposite]
+        if self.consecutive == 10:
+            directions.remove(self.direction)
+        return directions
 
 
-def get_neighbors_ultra(
-    blocks: list[list[int]], node: Node
+def get_neighbors(
+    node: Node, blocks: list[list[int]], directions: list[Direction]
 ) -> list[tuple[float, Node]]:
-    if node.consecutive == 0:
-        directions = list(Direction)
-    elif node.consecutive < 4:
-        directions = [node.direction]
-    else:
-        directions = [d for d in Direction if d != node.direction.opposite]
-
-    if node.consecutive == 10:
-        directions.remove(node.direction)
-
     nodes = []
     for direction in directions:
-        r, c = direction.apply((node.r, node.c))
+        dr, dc = direction.value
+        r, c = node.r + dr, node.c + dc
         consecutive = 1 if direction != node.direction else (node.consecutive + 1)
         if 0 <= r < len(blocks) and 0 <= c < len(blocks[r]):
             nodes.append((blocks[r][c], Node(r, c, direction, consecutive)))
@@ -102,11 +91,14 @@ def main():
     def is_end(node: Node) -> bool:
         return node.r == len(blocks) - 1 and node.c == len(blocks[0]) - 1
 
-    least_heat = dijkstra(start, partial(get_neighbors, blocks), is_end)
-    print(f"Part 1: {least_heat}")
+    def neighbor_fn(node: Node) -> list[tuple[float, Node]]:
+        return get_neighbors(node, blocks, node.get_directions())
 
-    least_heat_ultra = dijkstra(start, partial(get_neighbors_ultra, blocks), is_end)
-    print(f"Part 2: {least_heat_ultra}")
+    def neighbor_fn_ultra(node: Node) -> list[tuple[float, Node]]:
+        return get_neighbors(node, blocks, node.get_directions_ultra())
+
+    print(f"Part 1: {dijkstra(start, neighbor_fn, is_end)}")
+    print(f"Part 2: {dijkstra(start, neighbor_fn_ultra, is_end)}")
 
 
 if __name__ == "__main__":
