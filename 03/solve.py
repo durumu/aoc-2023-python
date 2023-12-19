@@ -39,7 +39,7 @@ def get_part_numbers_and_gears(
 
 
 def get_gear_ratios(
-    part_numbers_and_gears: list[tuple[int, tuple[int, int]]]
+    part_numbers_and_gears: list[tuple[int, tuple[int, int]]],
 ) -> list[int]:
     gear_vals = defaultdict(list)
     for part_number, gears in part_numbers_and_gears:
