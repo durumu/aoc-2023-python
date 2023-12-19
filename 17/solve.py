@@ -1,10 +1,12 @@
 from __future__ import annotations
-from enum import Enum
-from functools import partial
-import sys
-from typing import TypeVar, Callable
-import attrs
+
 import heapq
+import sys
+from collections.abc import Callable
+from enum import Enum
+from typing import TypeVar
+
+import attrs
 
 T = TypeVar("T")
 

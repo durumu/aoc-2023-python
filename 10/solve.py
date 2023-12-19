@@ -1,9 +1,11 @@
 from __future__ import annotations
-from collections import deque
+
 import sys
-from typing import Iterable
-import attrs
+from collections import deque
+from collections.abc import Iterable
 from enum import Enum
+
+import attrs
 
 
 class Direction(Enum):

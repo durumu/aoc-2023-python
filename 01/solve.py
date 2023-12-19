@@ -1,5 +1,7 @@
-import sys
+from __future__ import annotations
+
 import re
+import sys
 
 DIGIT_MAP: dict[str, str] = {
     "one": "1",

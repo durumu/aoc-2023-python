@@ -1,6 +1,8 @@
 from __future__ import annotations
-import sys
+
 import itertools
+import sys
+
 import attrs
 
 
@@ -39,11 +41,11 @@ class RangeMap:
 
 
 def main():
-    seeds_line, *map_line_lists = [
+    seeds_line, *map_line_lists = (
         list(group)
         for key, group in itertools.groupby(sys.stdin, lambda x: bool(x.strip()))
         if key
-    ]
+    )
 
     maps = []
     for lines in map_line_lists:

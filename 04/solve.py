@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import attrs
 import sys
+
+import attrs
 
 
 @attrs.frozen

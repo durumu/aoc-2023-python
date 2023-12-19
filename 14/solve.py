@@ -1,9 +1,9 @@
 from __future__ import annotations
-import sys
-import attrs
+
 import itertools
-from functools import cached_property
-from typing import ClassVar
+import sys
+
+import attrs
 
 
 def _slide_row(row: str, reverse: bool) -> str:

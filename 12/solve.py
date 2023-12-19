@@ -1,7 +1,9 @@
 from __future__ import annotations
-import attrs
+
 import sys
 from functools import cache
+
+import attrs
 
 
 @attrs.frozen

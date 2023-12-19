@@ -1,10 +1,12 @@
 from __future__ import annotations
-import sys
-from multiprocessing import Pool
-from attr import evolve, field
-import attrs
+
 import enum
 import os
+import sys
+from multiprocessing import Pool
+
+import attrs
+from attr import evolve, field
 
 
 class Direction(enum.IntEnum):

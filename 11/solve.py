@@ -1,8 +1,10 @@
-import attrs
+from __future__ import annotations
+
 import sys
-from itertools import combinations
 from functools import cached_property
-from bisect import bisect
+from itertools import combinations
+
+import attrs
 
 
 @attrs.define(slots=False)

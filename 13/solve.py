@@ -1,9 +1,10 @@
 from __future__ import annotations
-import sys
-import attrs
+
 import itertools
-from typing import Any
+import sys
 from functools import cached_property
+
+import attrs
 
 
 @attrs.define(slots=False)

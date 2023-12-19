@@ -1,7 +1,9 @@
-import sys
+from __future__ import annotations
+
 import itertools
-import re
 import math
+import re
+import sys
 
 
 def path_length(node: str, directions: str, lookup: dict[tuple[str, str], str]) -> int:
@@ -12,11 +14,11 @@ def path_length(node: str, directions: str, lookup: dict[tuple[str, str], str]) 
 
 
 def main():
-    direction_lines, lookup_lines = [
+    direction_lines, lookup_lines = (
         list(group)
         for key, group in itertools.groupby(sys.stdin, lambda x: bool(x.strip()))
         if key
-    ]
+    )
     directions = direction_lines[0].strip()
 
     lookup = {}
