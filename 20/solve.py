@@ -10,7 +10,7 @@ from attrs import field, frozen
 
 @frozen
 class State:
-    high_flip_flops: set[str]
+    on_flip_flops: set[str]
     conjunction_memory: dict[str, set[str]]
     total_low: int = 0
     total_high: int = 0
@@ -32,33 +32,33 @@ class Machine:
 
     def next_state(self, state: State) -> State:
         receiving = {
-            node: ("broadcaster", True) for node in self.children["broadcaster"]
+            node: ("broadcaster", False) for node in self.children["broadcaster"]
         }
-        flip_flop_high = {
-            node: node in state.high_flip_flops for node in self.flip_flops
-        }
+        flip_flop_on = {node: node in state.on_flip_flops for node in self.flip_flops}
         conjunction_memory = {
             node: memory.copy() for node, memory in state.conjunction_memory.items()
         }
         lows_sent = highs_sent = 0
+        # print("button -low-> broadcaster")
         while receiving:
             sending = {}
             for node, (sender, is_high) in receiving.items():
+                # print(sender, f"-{'high' if is_high else 'low'}->", node)
                 if is_high:
                     highs_sent += 1
                 else:
                     lows_sent += 1
                 if node in self.flip_flops:
-                    if is_high != flip_flop_high[node]:
-                        flip_flop_high[node] = is_high
+                    if not is_high:
+                        flip_flop_on[node] ^= True
                         for child in self.children[node]:
-                            sending[child] = (node, is_high)
+                            sending[child] = (node, flip_flop_on[node])
                 elif node in self.conjunctions:
                     if is_high:
                         conjunction_memory[node].add(sender)
                     else:
                         conjunction_memory[node].discard(sender)
-                    send_high = len(conjunction_memory[node]) == len(self.parents[node])
+                    send_high = len(conjunction_memory[node]) != len(self.parents[node])
                     for child in self.children[node]:
                         sending[child] = (node, send_high)
                 else:
@@ -67,9 +67,9 @@ class Machine:
             receiving = sending
 
         return State(
-            {node for node, is_high in flip_flop_high.items() if is_high},
+            {node for node, is_on in flip_flop_on.items() if is_on},
             conjunction_memory,
-            state.total_low + lows_sent,
+            state.total_low + lows_sent + 1,  # the button
             state.total_high + highs_sent,
         )
 
@@ -77,9 +77,7 @@ class Machine:
         """returns (low pulses * high pulses)"""
         state = State(set(), {node: set() for node in self.conjunctions})
         for _ in range(runs):
-            print(state)
             state = self.next_state(state)
-        print(state)
         return state.total_low * state.total_high
 
     @classmethod
@@ -103,8 +101,8 @@ class Machine:
 
 def main():
     machine = Machine.parse(line.strip() for line in sys.stdin)
-    print(machine.count_pulses(4))
-    # print(machine.count_pulses(1000))
+    # print(machine.count_pulses(1))
+    print(machine.count_pulses(1000))
 
 
 if __name__ == "__main__":
